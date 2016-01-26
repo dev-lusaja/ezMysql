@@ -63,6 +63,6 @@ try {
 Important
 =========
 
-1. Some error is generated when the class will send a "throw" so it is important to work with "try and catch".
+1. When the process is not completed or fails, the method will throw an exception, you should use "try catch".
 2. For queries like "SELECT, SHOW, DESC" the method "Query" will return an associative array.
 3. For queries like "INSERT, DELETE, UPDATE" the method "Query" will return an exception if the execution of the command is not completed
