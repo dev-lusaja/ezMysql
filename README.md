@@ -37,7 +37,7 @@ In this example we will establish a connection to the MySQL server, create datab
 ~~~php
 require_once("./ezMysql.class.php");
 try {
-	$ezMysql = new ezMysql('localhost', 'root', '');
+	$ezMysql = ezMysql::getconnection('localhost', 'root', '');
 	$sql = "create database test";
 	$ezMysql->Query($sql);
 	$ezMysql->ChangeDb("test");
