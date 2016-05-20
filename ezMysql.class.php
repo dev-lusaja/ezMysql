@@ -1,4 +1,5 @@
 <?php
+
 class ezMysqlConnectionError extends Exception{};
 class ezMysqlDisconnectError extends Exception{};
 class ezMysqlChangeDbError extends Exception{};
@@ -8,40 +9,57 @@ class ezMysqlInsertedIdError extends Exception{};
 
 class ezMysql {
 
-    protected $resource;
+    private static $instance;
+    private $connection;
 
-    function __construct($server, $user, $pass = '', $db = '')
+    /**
+    * Singleton pattern
+    **/
+    public static function getconnection($server, $user = '', $pass = '', $db = '')
+    {
+        if( is_null(self::$instance) ) {
+            self::$instance = new self($server, $user, $pass, $db);
+        }
+        return self::$instance;
+    }
+
+
+    protected function __construct($server, $user, $pass, $db)
     {
         if (empty($server) or empty($user)) {
             throw new ezMysqlConstructError("Data connection is required");
         }
 
-        $this->resource = new mysqli($server, $user, $pass, $db);
+        $this->connection = new mysqli($server, $user, $pass, $db);
 
-        if($this->resource->connect_errno){
-            throw new ezMysqlConnectionError("Connection error (". $this->resource->connect_errno .") : " . $this->resource->connect_error);
+        if($this->connection->connect_errno){
+            throw new ezMysqlConnectionError("Connection error (". $this->connection->connect_errno .") : " . $this->connection->connect_error);
         }
     }
+
+
 
     public function Disconnect()
     {
-        if(!$this->resource->close()){
-            throw new ezMysqlDisconnectError($this->resource->error); 
+        if(!$this->connection->close()){
+            throw new ezMysqlDisconnectError(self::$resource->error); 
         }
     }
     
-    public function ChangeDb($db)
+
+    public static function ChangeDb($db)
     {
-        if (!$this->resource->select_db($db)) {
-            throw new ezMysqlChangeDbError($this->resource->error); 
+        if (!$this->connection->select_db($db)) {
+            throw new ezMysqlChangeDbError($this->connection->error); 
         }
     }
      
+
     //For queries like "SELECT, SHOW, DESC" will return an associative array
     //For queries like "INSERT, DELETE, UPDATE" will return an exception if the execution of the command is not completed
     public function Query($query)
     {
-        $result = $this->resource->query($query);
+        $result = $this->connection->query($query);
         if (is_object($result)) 
         {
             if ($result->num_rows > 0) {
@@ -49,18 +67,20 @@ class ezMysql {
             }
         }
         else if (!$result) {
-            throw new ezMysqlQueryError($this->resource->error); 
+            throw new ezMysqlQueryError($this->connection->error); 
         }
     }
 
+
     public function InsertedId()
     {
-        $inserted_id = $this->resource->insert_id;
+        $inserted_id = $this->connection->insert_id;
         if (empty($inserted_id)) {
             throw new ezMysqlInsertedIdError("Not found any ID generated automatically.");    
         }
         return $inserted_id;
     }
+
 
     protected function FetchAssoc($result)
     {
