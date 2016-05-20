@@ -47,7 +47,7 @@ class ezMysql {
     }
     
 
-    public static function ChangeDb($db)
+    public function ChangeDb($db)
     {
         if (!$this->connection->select_db($db)) {
             throw new ezMysqlChangeDbError($this->connection->error); 
